@@ -85,3 +85,7 @@ Secondly, attempt the setup
 
 ```bash
 composer setup
+```
+Thirdly, test in development
+```bash
+composer dev
