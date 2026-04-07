@@ -58,7 +58,30 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## 🚀 Quick Setup (One Command)
+---
+
+# Portfolio Dashboard Project
+
+A personal portfolio management system with admin dashboard to manage skills, projects, and project screenshots.
+
+## 📋 Requirements
+
+- PHP ^8.2
+- Composer
+- MySQL (or MariaDB)
+- Node.js & NPM
+
+## 🚀 Quick Setup
+
+### Step 1: Create MySQL Database
+
+First, create an empty database for the project:
+
+```sql
+CREATE DATABASE godito_project_and_skills_portfolio;
+```
+
+Secondly, attempt the setup
 
 ```bash
 composer setup
