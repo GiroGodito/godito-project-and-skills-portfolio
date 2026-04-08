@@ -46,4 +46,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Bootstrap the model and its traits.
+     */
+    protected static function booted()
+    {
+        static::creating(function () {
+            if (static::count() > 0) {
+                abort(403, 'Only one user account is allowed.');
+            }
+        });
+    }
 }

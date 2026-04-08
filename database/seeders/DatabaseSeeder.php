@@ -72,12 +72,12 @@ class DatabaseSeeder extends Seeder
         $this->command->info('============================================');
         
         // Call other seeders (uncomment when ready)
-        // $this->call([
-        //     ProfileSeeder::class,
-        //     SkillsSeeder::class,
-        //     ProjectsSeeder::class,
-        //     ProjectSkillsSeeder::class,
-        //     ProjectScreenshotsSeeder::class,
-        // ]);
+        $this->call([
+            ProfileSeeder::class,
+            SkillsSeeder::class,
+            ProjectsSeeder::class,
+            ProjectSkillsSeeder::class,
+            ProjectScreenshotsSeeder::class,
+        ]);
     }
 }
