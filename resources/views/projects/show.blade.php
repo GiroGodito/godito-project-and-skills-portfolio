@@ -444,8 +444,10 @@
         </div>
     </div>
 
-    <!-- Lightbox Modal -->
-    <div id="lightbox" class="fixed inset-0 bg-black/95 hidden items-center justify-center z-50" onclick="closeLightbox()">
+   <!-- Lightbox Modal -->
+    <div id="lightbox" class="fixed inset-0 bg-black/95 hidden items-center justify-center z-50" 
+        tabindex="-1"
+        onclick="closeLightbox()">
         <div class="relative max-w-7xl mx-4" onclick="event.stopPropagation()">
             <div class="lightbox-border-wrapper">
                 <img id="lightboxImage" src="" alt="" class="lightbox-image max-h-[85vh] w-auto shadow-2xl">
@@ -453,12 +455,12 @@
             <p id="lightboxCaption" class="text-center text-gray-400 mt-4 text-sm sm:text-base"></p>
             
             <!-- Navigation Arrows -->
-            <button onclick="previousImage()" class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition">
+            <button onclick="previousImage(); event.stopPropagation();" class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition z-10">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </button>
-            <button onclick="nextImage()" class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition">
+            <button onclick="nextImage(); event.stopPropagation();" class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition z-10">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -467,67 +469,169 @@
     </div>
 
     <script>
-      
-        window.screenshots = [];
+    // Use window for Turbo compatibility
+    window.screenshots = [];
+    window.currentImageIndex = 0;
+    window.isLightboxOpen = false;
 
-        window.currentImageIndex = window.currentImageIndex || 0;
+    @foreach($project->screenshots as $index => $screenshot)
+        window.screenshots.push('{{ asset($screenshot->image) }}');
+    @endforeach
 
-        @foreach($project->screenshots as $index => $screenshot)
-            window.screenshots.push('{{ asset($screenshot->image) }}');
-        @endforeach
+    function openLightbox(imageUrl, title, index = 0) {
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCaption = document.getElementById('lightboxCaption');
 
-        function openLightbox(imageUrl, title, index = 0) {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImage = document.getElementById('lightboxImage');
-            const lightboxCaption = document.getElementById('lightboxCaption');
+        if (!lightbox || !lightboxImage) return;
+        
+        window.currentImageIndex = index;
+        lightboxImage.src = imageUrl;
+        lightboxCaption.textContent = `${index + 1} of ${window.screenshots.length} — Use arrow keys or click arrows to navigate`;
+        
+        lightbox.classList.remove('hidden');
+        lightbox.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        window.isLightboxOpen = true;
+        
+        // Force focus on lightbox
+        lightbox.focus();
+        
+        // Re-focus after a tiny delay for Turbo
+        setTimeout(() => {
+            if (window.isLightboxOpen) {
+                lightbox.focus();
+            }
+        }, 50);
+    }
 
-            window.currentImageIndex = index;
-            lightboxImage.src = imageUrl;
-            lightboxCaption.textContent = `${index + 1} of ${screenshots.length} — Use arrow keys or click arrows to navigate`;
-            lightbox.classList.remove('hidden');
-            lightbox.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
+    function closeLightbox() {
+        const lightbox = document.getElementById('lightbox');
+        if (!lightbox) return;
+        
+        lightbox.classList.add('hidden');
+        lightbox.classList.remove('flex');
+        document.body.style.overflow = '';
+        window.isLightboxOpen = false;
+        lightbox.blur();
+    }
 
-        function closeLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            lightbox.classList.add('hidden');
-            lightbox.classList.remove('flex');
-            document.body.style.overflow = '';
-        }
+    function previousImage() {
+        if (window.screenshots.length === 0) return;
+        window.currentImageIndex = (window.currentImageIndex - 1 + window.screenshots.length) % window.screenshots.length;
+        updateLightboxImage();
+    }
 
-        function previousImage() {
-            if (window.screenshots.length === 0) return;
-            window.currentImageIndex = (window.currentImageIndex - 1 + window.screenshots.length) % window.screenshots.length;
-            updateLightboxImage();
-        }
+    function nextImage() {
+        if (window.screenshots.length === 0) return;
+        window.currentImageIndex = (window.currentImageIndex + 1) % window.screenshots.length;
+        updateLightboxImage();
+    }
 
-        function nextImage() {
-            if (window.screenshots.length === 0) return;
-            window.currentImageIndex = (window.currentImageIndex + 1) % window.screenshots.length;
-            updateLightboxImage();
-        }
-
-        function updateLightboxImage() {
-            const lightboxImage = document.getElementById('lightboxImage');
-            const lightboxCaption = document.getElementById('lightboxCaption');
-            
+    function updateLightboxImage() {
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        
+        if (lightboxImage && window.screenshots[window.currentImageIndex]) {
             lightboxImage.src = window.screenshots[window.currentImageIndex];
             lightboxCaption.textContent = `${window.currentImageIndex + 1} of ${window.screenshots.length} — Use arrow keys or click arrows to navigate`;
         }
+    }
 
-        document.addEventListener('keydown', function(e) {
-            const lightbox = document.getElementById('lightbox');
-            if (lightbox && lightbox.classList.contains('flex')) {
-                if (e.key === 'Escape') {
-                    closeLightbox();
-                } else if (e.key === 'ArrowLeft') {
-                    previousImage();
-                } else if (e.key === 'ArrowRight') {
-                    nextImage();
-                }
+    // Function to setup keyboard event listener (prevents duplicates with Turbo)
+    function setupKeyboardListener() {
+        // Remove existing listener if any (prevents duplicates in Turbo)
+        if (window.lightboxKeyHandler) {
+            document.removeEventListener('keydown', window.lightboxKeyHandler);
+        }
+        
+        // Create new handler
+        window.lightboxKeyHandler = function(e) {
+            if (!window.isLightboxOpen) return;
+            
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
             }
-        });
+            
+            switch(e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    previousImage();
+                    setTimeout(() => {
+                        if (window.isLightboxOpen) document.getElementById('lightbox')?.focus();
+                    }, 10);
+                    break;
+                case 'ArrowRight':
+                    nextImage();
+                    setTimeout(() => {
+                        if (window.isLightboxOpen) document.getElementById('lightbox')?.focus();
+                    }, 10);
+                    break;
+            }
+        };
+        
+        document.addEventListener('keydown', window.lightboxKeyHandler);
+    }
+
+    // Setup click handler for lightbox background (prevents duplicates)
+    function setupClickHandler() {
+        const lightbox = document.getElementById('lightbox');
+        if (!lightbox) return;
+        
+        // Remove existing handler if any
+        if (window.lightboxClickHandler) {
+            lightbox.removeEventListener('click', window.lightboxClickHandler);
+        }
+        
+        window.lightboxClickHandler = function(e) {
+            if (window.isLightboxOpen && e.target === this) {
+                this.focus();
+            }
+        };
+        
+        lightbox.addEventListener('click', window.lightboxClickHandler);
+    }
+
+    // Initialize everything
+    function initLightbox() {
+        setupKeyboardListener();
+        setupClickHandler();
+        console.log('Lightbox initialized with', window.screenshots.length, 'screenshots');
+    }
+
+    // Run on page load
+    initLightbox();
+
+    // CRITICAL: Handle Turbo page navigation events
+    document.addEventListener('turbo:load', function() {
+        // Re-initialize after Turbo navigation
+        initLightbox();
+    });
+
+    document.addEventListener('turbo:before-cache', function() {
+        // Clean up before Turbo caches the page
+        if (window.lightboxKeyHandler) {
+            document.removeEventListener('keydown', window.lightboxKeyHandler);
+        }
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox && window.lightboxClickHandler) {
+            lightbox.removeEventListener('click', window.lightboxClickHandler);
+        }
+        // Close lightbox if open when caching
+        if (window.isLightboxOpen) {
+            closeLightbox();
+        }
+    });
+
+    // Also handle Turbo Render events
+    document.addEventListener('turbo:render', function() {
+        // Re-attach handlers after Turbo render
+        setupKeyboardListener();
+        setupClickHandler();
+    });
     </script>
 
     <style>
