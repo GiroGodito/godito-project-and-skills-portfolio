@@ -40,8 +40,8 @@
                     
                     <!-- Title, Status Badge, and Buttons -->
                     <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div class="flex flex-row flex-wrap items-start sm:items-center justify-between gap-4">
+                            <div class="flex flex-row flex-wrap items-start sm:items-center gap-3">
                                 <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-lg">{{ $project->title }}</h1>
                                 
                                 @if($project->status === 'deployed')
